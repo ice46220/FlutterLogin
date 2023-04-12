@@ -1,13 +1,21 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/screen/login.dart';
+import 'package:flutter_application_1/controller/base_api.dart';
+import 'package:flutter_application_1/model/todolist.dart';
+import 'package:flutter_application_1/screen/home.dart';
+import 'package:flutter_application_1/screen/widget/widget.dart';
 import 'package:flutter_svg_provider/flutter_svg_provider.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class EditScreen extends StatefulWidget {
-  const EditScreen({super.key});
+   EditScreen({
+    super.key,
+    required this.todolist,
+  });
+
+  Todolist? todolist;
 
   @override
   State<EditScreen> createState() => _EditScreenState();
@@ -16,9 +24,71 @@ class EditScreen extends StatefulWidget {
 class _EditScreenState extends State<EditScreen> {
   final formKey = GlobalKey<FormState>();
   bool isSwitched = false;
-  String message = '';
-  String title = '';
-  String dec = '';
+  TextEditingController title = TextEditingController();
+  TextEditingController dec = TextEditingController();
+  String idTodo = '';
+  String userIdTodo = '';
+  @override
+  void initState() {
+    super.initState();
+    if(widget.todolist != null) {
+      title.text = widget.todolist!.userTodoListTitle.toString();
+      dec.text = widget.todolist!.userTodoListDesc.toString();
+      isSwitched =
+          widget.todolist!.userTodoListCompleted.toLowerCase() == "true";
+      idTodo = widget.todolist!.userTodoListId.toString();
+      userIdTodo = widget.todolist!.userId.toString();
+    }
+  }
+
+  void snackShowGreen (text) {
+     ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(
+      content: Text(text),
+       duration: const Duration(seconds: 1),
+      backgroundColor: Colors.green[300],
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(
+          Radius.circular(5.00),
+        ),
+      ),
+    ));
+  }
+  void snackShowRed (text) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar( content: Text(text),
+      duration: const Duration(seconds: 1),
+      backgroundColor: Colors.red,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(
+          Radius.circular(5.00),
+        ),
+      ),
+    ));
+  }
+
+  Future<void> updateTodo() async {
+    bool isSuccess = await CAllAPI().UpdateTodos(
+        idTodo, title.text, dec.text, userIdTodo, isSwitched);
+    if (isSuccess) {
+      Navigator.pop(context);
+      snackShowGreen("Success Your Todo has been saved");
+    } else {
+      snackShowRed("Error");
+    }
+  }
+
+
+  Future<void> addTodo() async {
+    bool isSuccess =
+    await CAllAPI().addTodos(title.text, dec.text, isSwitched);
+    if (isSuccess) {
+      snackShowGreen("Success Your Todo has been saved");
+      Navigator.pop(context);
+    } else {
+      snackShowRed("Error");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +98,6 @@ class _EditScreenState extends State<EditScreen> {
         title: Row(
           children: [
             SizedBox(
-              width: 180,
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Row(
@@ -38,19 +107,19 @@ class _EditScreenState extends State<EditScreen> {
                       onTap: () {
                         Navigator.pushReplacement(context,
                             MaterialPageRoute(builder: (context) {
-                          return LoginScreen();
+                          return HomeScreen();
                         }));
                       },
-                      child: Image(
+                      child: const Image(
                         width: 40,
                         height: 40,
                         image: Svg('assets/images/vector.svg'),
                       ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       width: 9,
                     ),
-                    Text("Your Todo",
+                    Text((widget.todolist == null ? "Add Your Todo":"Your Todo" ) ,
                         style: GoogleFonts.outfit(
                           color: HexColor("##FFFFFF"),
                           fontSize: 20,
@@ -71,8 +140,8 @@ class _EditScreenState extends State<EditScreen> {
                 HexColor("#4CC599"),
                 HexColor("#0D7A5C"),
               ],
-              stops: [0.05, 1.84],
-              transform: GradientRotation(172.65 * 3.14 / 180),
+              stops: const [0.05, 1.84],
+              transform: const GradientRotation(172.65 * 3.14 / 180),
             ),
             boxShadow: const [
               BoxShadow(
@@ -97,87 +166,27 @@ class _EditScreenState extends State<EditScreen> {
                   key: formKey,
                   child: Column(
                     children: [
-                      Container(
-                          height: 60,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: new BorderRadius.circular(10.0),
-                            boxShadow: const [
-                              BoxShadow(
-                                //box-shadow: rgba(0, 0, 0, 0.2);0px 0px 6px
-                                color: Color.fromRGBO(0, 0, 0, 0.2),
-                                offset: Offset(0, 0),
-                                blurRadius: 6,
-                                spreadRadius: 0,
-                              ),
-                            ],
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(20, 5, 20, 5),
-                            child: TextFormField(
-                              style: GoogleFonts.outfit(
-                                color: Color.fromRGBO(102, 97, 97, 0.68),
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              maxLines: 1,
-                              decoration: InputDecoration(
-                                border: InputBorder.none,
-                                hintText: "Title",
-                                hintStyle: GoogleFonts.outfit(
-                                  color: Color.fromRGBO(102, 97, 97, 0.68),
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              onSaved: (String? titleDec) {
-                                title = titleDec!;
-                              },
-                            ),
-                          )),
+                      SecondTextFieldWidget(
+                        text: "Title",
+                        controller: title,
+                        onSaved: (String? titleDec) {
+                          title.text = titleDec!;
+                        },
+                        line: 1,
+                        height: 60,
+                      ),
                       const SizedBox(
                         height: 10,
                       ),
-                      Container(
-                          height: 200,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: new BorderRadius.circular(10.0),
-                            boxShadow: [
-                              BoxShadow(
-                                //box-shadow: rgba(0, 0, 0, 0.2);0px 0px 6px
-                                color: Color.fromRGBO(0, 0, 0, 0.2),
-                                offset: Offset(0, 0),
-                                blurRadius: 6,
-                                spreadRadius: 0,
-                              ),
-                            ],
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(20, 5, 20, 5),
-                            child: TextFormField(
-                              style: GoogleFonts.outfit(
-                                color: Color.fromRGBO(102, 97, 97, 0.68),
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              maxLines: 10,
-                              decoration: InputDecoration(
-                                border: InputBorder.none,
-                                hintText: "Decription",
-                                hintStyle: GoogleFonts.outfit(
-                                  color: const Color.fromRGBO(102, 97, 97, 0.68),
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              onSaved: (String? decription) {
-                                dec = decription!;
-                              },
-                            ),
-                          )),
+                      SecondTextFieldWidget(
+                        text: "Decription",
+                        controller: dec,
+                        onSaved: (String? decription) {
+                          dec.text = decription!;
+                        },
+                        line: 10,
+                        height: 200,
+                      ),
                       const SizedBox(
                         height: 10,
                       ),
@@ -213,76 +222,33 @@ class _EditScreenState extends State<EditScreen> {
                                   onChanged: (value) {
                                     setState(() {
                                       isSwitched = value;
-                                      print(isSwitched);
                                     });
                                   },
                                   thumbColor: Colors.white,
-                                  trackColor: HexColor("#3CB189"),
-                                  activeColor: Color.fromRGBO(0, 0, 0, 0.17),
+                                  activeColor: HexColor("#3CB189"),
+                                  trackColor: Color.fromRGBO(0, 0, 0, 0.17),
                                 ),
                               ))),
-                      SizedBox(
-                        height: 200,
+                      const SizedBox(
+                        height: 35,
                       ),
-                      Container(
-                          height: 60,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(15),
-                            gradient: LinearGradient(
-                              colors: [
-                                HexColor("#53CD9F"),
-                                HexColor("#0D7A5C"),
-                              ],
-                              begin: FractionalOffset.topCenter,
-                              end: FractionalOffset.bottomCenter,
-                              stops: [0.0, 1.0],
-                              //transform: GradientRotation(180 * 3.14 / 180), //กลับหัว
-                            ),
-                          ),
-                          child: ElevatedButton(
-                              onPressed: () {
-                                formKey.currentState?.save();
-                                if (title != '' && dec != '') {
-                                  formKey.currentState
-                                      ?.reset(); //เคลียร์ฟอร์มเป็นค่าว่าง
-                                  ScaffoldMessenger.of(context)
-                                      .showSnackBar(SnackBar(
-                                    content:
-                                    Text("Success Your Todo has been saved"),
-                                    backgroundColor: Colors.green[300],
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.all(
-                                        Radius.circular(5.00),
-                                      ),
-                                    ),
-                                  ));
-                                } else {
-                                  ScaffoldMessenger.of(context)
-                                      .showSnackBar(SnackBar(
-                                    content: Text("กรุณาเติมข้อความให้ครบถ้วน"),
-                                    backgroundColor: Colors.red,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.all(
-                                        Radius.circular(5.00),
-                                      ),
-                                    ),
-                                  ));
-                                }
-                              },
-                              style: ElevatedButton.styleFrom(
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(15),
-                                  ),
-                                  backgroundColor: Colors.transparent),
-                              child: Text(
-                                "Save",
-                                style: GoogleFonts.outfit(
-                                  color: HexColor("#FFFFFF"),
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ))),
+                      ButtonWidget(
+                        textButton: "Save",
+                        press: () {
+                          formKey.currentState?.save();
+                          if (title.text != '' && dec.text != '') {
+                            // formKey.currentState
+                            //     ?.reset(); //เคลียร์ฟอร์มเป็นค่าว่าง
+                            widget.todolist == null ?   addTodo()  : updateTodo();
+                          }
+                          else {
+                            String mes = "data";
+                            if(title.text == '' && dec.text !="") mes = "title";
+                            else if (dec.text == '' && title.text != '') mes = "decription";
+                            snackShowRed("Please enter your $mes");
+                          }
+                        },
+                      ),
                     ],
                   ),
                 )

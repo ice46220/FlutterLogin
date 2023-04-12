@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_application_1/controller/base_api.dart';
-import 'package:flutter_application_1/screen/login.dart';
+import 'package:flutter_application_1/screen/home.dart';
 import 'package:flutter_application_1/screen/register.dart';
 import 'package:flutter_application_1/screen/widget/widget.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -30,7 +30,7 @@ class _LoginScreenState extends State<LoginScreen> {
       Navigator.push(context,
           MaterialPageRoute(
               builder: (context) {
-                return LoginScreen();
+                return HomeScreen();
               }));
     }
     else{

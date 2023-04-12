@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/controller/base_api.dart';
 import 'package:flutter_application_1/model/todolist.dart';
 import 'package:flutter_application_1/screen/edit.dart';
-import 'package:flutter_application_1/screen/home.dart';
+import 'package:flutter_application_1/screen/login.dart';
 import 'package:flutter_svg_provider/flutter_svg_provider.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -31,9 +31,9 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Todolist> data2 = [];
   String searchData = '';
   @override
-  void initState() {
+  void initState()  {
     //เซ็ตค่า ให้appbar
-    getValidationData();
+     getValidationData();
     super.initState();
   }
 
@@ -51,14 +51,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<List<Todolist>> fetchData() async {
     //ดึงข้อมูล Todolist
-    print("id $userId");
     final todolist = await CAllAPI().get('todo_list/$userId');
-    print("api $todolist");
     if (todolist != null) {
       final dataAPI =
-          jsonDecode(todolist); //แปรง json(string/array) เป็น object
+          jsonDecode(todolist); //แปลง json(string/array) เป็น object
       data.clear();
-      print("dataAPI $dataAPI");
       for (var index in dataAPI) {
         data.add(Todolist.fromJson(index));
       }
@@ -86,7 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => HomeScreen())), //ออกจากแอพ
+                    builder: (context) => LoginScreen())), //ออกจากแอพ
             child: const Text('Yes'),
           ),
         ],
@@ -97,8 +94,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Future dialogDelect(todoId) async {
     bool isSuccess = await CAllAPI().deleteTodos(todoId);
     if (isSuccess) {
-      Navigator.pop(context);
-      Navigator.pop(context);
+      Navigator.pop(context);    //ออกจากไดอาล็อก
+      Navigator.pop(context);     //ออกจาก
       setState(()
       //reloadหน้าเมื่อมีการเปลี่ยนแปลง
       {});
@@ -329,7 +326,18 @@ class _HomeScreenState extends State<HomeScreen> {
               if (snapshot.hasData) {
                 if (snapshot.data!.isEmpty) {
                   //มีค่าว่างไหม
-                  return const Center(child: Text("No Data"));
+                  return Center(
+                    child: Container(
+                        height:200,
+                        width: 200,
+                        decoration: const BoxDecoration(
+                        //shape: BoxShape.circle,
+                        image: DecorationImage(
+                            image: AssetImage("assets/images/nodata.png"),
+                           ),
+                      ),
+                    ),
+                  );
                 } else {
                   return Container(
                       child: Padding(
@@ -398,6 +406,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 itemCount: snapshot.data!.length,
                                 itemBuilder: (context, index) {
                                   Todolist todo = data[index];
+                                  print("length ${snapshot.data!.length}");
 
                                   //หาได้ทั้งพิมพ์เล็กพิมพ์ใหญ่
                                   if (searchData.isNotEmpty &&
@@ -609,7 +618,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                           ).then(
                                                                                 (value) =>
                                                                                 setState(
-                                                                                        () {}),
+                                                                                        () {
+                                                                                          Navigator.pop(context);
+                                                                                        }),
                                                                           );
                                                                         },
                                                                       ),
